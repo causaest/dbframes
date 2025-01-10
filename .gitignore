@@ -1,2 +1,8 @@
+# History files
+.Rhistory
+
+# Session Data files
+.RData
+
 # Drafts and extras
 extras/
