@@ -1,0 +1,182 @@
+---
+title: "Creating SQL files from popular datasets using R"
+subtitle: "mtcars"
+author: "Alex"
+date: "`r format(Sys.time(), '%d %B %Y, %H:%M:%S')`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    number_sections: false
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(RSQLite)
+```
+
+```{r}
+head(mtcars)
+```
+
+```{r}
+x <- mtcars %>%
+  mutate(make = rownames(mtcars),
+         id = as.character(row_number()), # as.character(1:nrow(mtcars)
+         cyl_id = as.character(as.integer(as.factor(cyl))),
+         vs_id = as.character(as.integer(as.factor(vs))),
+         am_id = as.character(as.integer(as.factor(am))),
+         gear_id = as.character(as.integer(as.factor(gear))),
+         carb_id = as.character(as.integer(as.factor(carb))))
+rownames(x) <- 1:nrow(mtcars)
+head(x)
+```
+
+Table of technical properties
+
+```{r}
+tech_prop_table <- x %>%
+  select(id, mpg, disp:qsec)
+head(tech_prop_table)
+```
+
+Table of cyl
+
+```{r}
+cyl_table <- x %>%
+  select(cyl, cyl_id) %>%
+  distinct() %>%
+  arrange(cyl) %>%
+  mutate(cyl = as.character(cyl))
+cyl_table
+```
+
+Table of vs
+
+```{r}
+vs_table <- x %>%
+  select(vs, vs_id) %>%
+  distinct() %>%
+  arrange(vs) %>%
+  mutate(vs = as.character(vs))
+vs_table
+```
+
+Table of am
+
+```{r}
+am_table <- x %>%
+  select(am, am_id) %>%
+  distinct() %>%
+  arrange(am) %>%
+  mutate(am = as.character(am))
+am_table
+```
+
+Table of gear
+
+```{r}
+gear_table <- x %>%
+  select(gear, gear_id) %>%
+  distinct() %>%
+  arrange(gear) %>%
+  mutate(gear = as.character(gear))
+gear_table
+```
+
+Table of carb
+
+```{r}
+carb_table <- x %>%
+  select(carb, carb_id) %>%
+  distinct() %>%
+  arrange(carb) %>%
+  mutate(carb = as.character(carb))
+carb_table
+```
+
+Table of cars
+
+```{r}
+cars_table <- x %>%
+  select(id, make, cyl_id, vs_id, am_id, gear_id, carb_id) %>%
+  mutate(id = as.numeric(id)) %>%
+  distinct() %>%
+  arrange(id) %>%
+  mutate(id = as.character(id))
+head(cars_table)
+```
+
+Rejoin
+
+```{r}
+df <- cars_table %>% 
+  right_join(., cyl_table, by = "cyl_id") %>% 
+  right_join(., vs_table, by = "vs_id") %>% 
+  right_join(., am_table, by = "am_id") %>%
+  right_join(., gear_table, by = "gear_id") %>% 
+  right_join(., carb_table, by = "carb_id") %>% 
+  select(c(id, make, cyl, vs, am, gear, carb)) %>% 
+  right_join(., tech_prop_table, by = "id") %>%
+  as_tibble()
+head(df)
+```
+
+Reorder columns and fix data types
+
+```{r}
+df <- as.data.frame(df)
+rownames(df) <- df$make
+df <- df %>%
+  select(mpg, cyl, disp:qsec, vs:carb) %>%
+  mutate(across(.cols = c(cyl, vs, am, gear, carb), .fns = ~ as.numeric(.x)))
+head(df)
+```
+
+The constructed data frame is identical to the original
+
+```{r}
+identical(mtcars, df)
+```
+
+A more relaxed equivalence test, ignoring the row order:
+
+```{r}
+nrow(setdiff(mtcars, df)) == 0
+```
+
+Create database
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), "mtcars.sqlite")
+```
+
+```{r}
+dbWriteTable(conn = con, name = "caritems", value = cars_table)
+dbWriteTable(con, "cyl", cyl_table)
+dbWriteTable(con, "vs", vs_table)
+dbWriteTable(con, "am", am_table)
+dbWriteTable(con, "gear", gear_table)
+dbWriteTable(con, "carb", carb_table)
+dbWriteTable(con, "techprop", tech_prop_table)
+```
+
+```{r}
+dbListTables(con)
+```
+
+Close the database connection
+
+```{r}
+dbDisconnect(con)
+```
+
+Cleanup
+
+```{r}
+file.remove("mtcars.sqlite")
+```
