@@ -1,8 +1,12 @@
+# Dev filess
+dev/
+
 # History files
 .Rhistory
 
 # Session Data files
 .RData
 
-# Drafts and extras
-extras/
+# RStudio files
+.Rproj
+.Rproj.user
