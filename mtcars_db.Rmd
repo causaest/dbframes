@@ -1,5 +1,5 @@
 ---
-title: "Create DB files from dataframe in R"
+title: "Create database files from dataframes in R"
 subtitle: "Example with `mtcars`"
 author: "Alex"
 date: "`r format(Sys.time(), '%d %B %Y, %H:%M:%S')`"
@@ -28,7 +28,7 @@ head(mtcars)
 #' Add an ID Column to a Data Frame
 #' 
 #' This function adds an `id` column to an input data frame, with IDs as 
-#' character strings ranging from 1 to the number of rows in the data frame.
+#' character strings, ranging from 1 up to the number of rows.
 #' 
 add_idcol <- function(x) {
   x$id = as.character(1:nrow(x))
@@ -39,8 +39,8 @@ add_idcol <- function(x) {
 ```{r}
 #' Convert a Vector to Integer Character Label
 #'
-#' Converts a vector into a factor, and then into a vector of labels ranging 
-#' from 1 to the number of factor levels
+#' Converts a vector into a factor, and then into a vector of labels, ranging 
+#' from 1 to the number of factor levels.
 #'
 as.cif <- function(x) {
   as.character(as.integer(as.factor(x)))
@@ -66,7 +66,6 @@ Using base R:
 ```{r}
 y <- mtcars
 y$make <- rownames(mtcars)
-as.cif(y$cyl)
 y <- add_idcol(y)
 y <- within(y, {
   make = rownames(mtcars)
@@ -84,12 +83,17 @@ x_dplyr <- x
 x <- y
 ```
 
-Table of technical properties
+Create table of cars specifications
 
 ```{r}
-tech_prop_table <- x %>%
-  select(id, mpg, disp:qsec)
-head(tech_prop_table)
+specs_table <- x %>%
+  dplyr::select(id, mpg, disp:qsec)
+head(specs_table)
+```
+
+```{r}
+specs_table <- x[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
+head(specs_table)
 ```
 
 Table of cyl
@@ -169,7 +173,7 @@ df <- cars_table %>%
   right_join(., gear_table, by = "gear_id") %>% 
   right_join(., carb_table, by = "carb_id") %>% 
   select(c(id, make, cyl, vs, am, gear, carb)) %>% 
-  right_join(., tech_prop_table, by = "id") %>%
+  right_join(., specs_table, by = "id") %>%
   as_tibble()
 head(df)
 ```
@@ -210,7 +214,7 @@ dbWriteTable(con, "vs", vs_table)
 dbWriteTable(con, "am", am_table)
 dbWriteTable(con, "gear", gear_table)
 dbWriteTable(con, "carb", carb_table)
-dbWriteTable(con, "techprop", tech_prop_table)
+dbWriteTable(con, "techprop", specs_table)
 ```
 
 ```{r}
