@@ -16,22 +16,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(dplyr)
-library(RSQLite)
+# library(RSQLite)
 ```
 
 ```{r}
 head(mtcars)
 ```
 
-
 ```{r}
 #' Add an ID Column to a Data Frame
 #' 
-#' This function adds an `id` column to an input data frame, with IDs as 
-#' character strings, ranging from 1 up to the number of rows.
+#' Adds an `id` column to a data frame, populated with IDs as character 
+#' strings ranging from 1 to the number of rows.
 #' 
-add_idcol <- function(x) {
-  x$id = as.character(1:nrow(x))
+add_id_col <- function(x) {
+  x$id = as.character(seq_len(nrow(x))
   return(x)
 }
 ```
@@ -39,7 +38,7 @@ add_idcol <- function(x) {
 ```{r}
 #' Convert a Vector to Integer Character Label
 #'
-#' Converts a vector into a factor, and then into a vector of labels, ranging 
+#' Converts a vector into a factor, and then into a vector of labels ranging 
 #' from 1 to the number of factor levels.
 #'
 as.cif <- function(x) {
@@ -47,52 +46,63 @@ as.cif <- function(x) {
 }
 ```
 
-Using dplyr:
-
 ```{r}
-x <- mtcars %>%
-  mutate(make = rownames(mtcars),
-         id = as.character(row_number()), # as.character(1:nrow(mtcars))
-         cyl_id = as.cif(cyl),
-         vs_id = as.cif(vs),
-         am_id = as.cif(am),
-         gear_id = as.cif(gear),
-         carb_id = as.cif(carb))
-rownames(x) <- 1:nrow(mtcars)
+# # Using dplyr:
+# x <- mtcars %>%
+#   mutate(make = rownames(mtcars),
+#          id = as.character(row_number()), # as.character(1:nrow(mtcars))
+#          cyl_id = as.cif(cyl),
+#          vs_id = as.cif(vs),
+#          am_id = as.cif(am),
+#          gear_id = as.cif(gear),
+#          carb_id = as.cif(carb))
+# rownames(x) <- 1:nrow(mtcars)
 ```
 
 Using base R:
 
 ```{r}
-y <- mtcars
-y$make <- rownames(mtcars)
-y <- add_idcol(y)
-y <- within(y, {
-  make = rownames(mtcars)
-  cyl_id = as.cif(cyl)
-  vs_id = as.cif(vs)
-  am_id = as.cif(am)
-  gear_id = as.cif(gear)
-  carb_id = as.cif(carb)
-})
-rownames(y) <- 1:nrow(y)
+# y <- mtcars
+# y$make <- rownames(mtcars)
+# y <- add_id_col(y)
+# y <- within(y, {
+#   make = rownames(mtcars)
+#   cyl_id = as.cif(cyl)
+#   vs_id = as.cif(vs)
+#   am_id = as.cif(am)
+#   gear_id = as.cif(gear)
+#   carb_id = as.cif(carb)
+# })
+# rownames(y) <- 1:nrow(y)
+
+y <- mtcars |>
+  transform(
+    make = rownames(mtcars),
+    cyl_id = as.cif(cyl),
+    vs_id = as.cif(vs),
+    am_id = as.cif(am),
+    gear_id = as.cif(gear),
+    carb_id = as.cif(carb)
+  ) |>
+  add_id_col() |>
+  {\(data) { rownames(data) <- 1:nrow(data); data }}()
 ```
 
 ```{r}
-x_dplyr <- x
-x <- y
+# x_dplyr <- x
+# x <- y
 ```
 
 Create table of cars specifications
 
 ```{r}
-specs_table <- x %>%
+specs_table <- y %>%
   dplyr::select(id, mpg, disp:qsec)
 head(specs_table)
 ```
 
 ```{r}
-specs_table <- x[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
+specs_table <- y[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
 head(specs_table)
 ```
 
@@ -115,7 +125,7 @@ Table of cyl
 # cyl_table
 
 # Using base R and |> pipe
-cyl_table <- x[, c("cyl", "cyl_id")] |>
+cyl_table <- y[, c("cyl", "cyl_id")] |>
   unique() |>
   (\(df) df[order(df$cyl_id), ])() |>
   (\(df) { df$cyl <- as.character(df$cyl); df })() |>
@@ -126,7 +136,7 @@ cyl_table
 Table of vs
 
 ```{r}
-vs_table <- x %>%
+vs_table <- y %>%
   select(vs, vs_id) %>%
   distinct() %>%
   arrange(vs) %>%
@@ -137,7 +147,7 @@ vs_table
 Table of am
 
 ```{r}
-am_table <- x %>%
+am_table <- y %>%
   select(am, am_id) %>%
   distinct() %>%
   arrange(am) %>%
@@ -148,7 +158,7 @@ am_table
 Table of gear
 
 ```{r}
-gear_table <- x %>%
+gear_table <- y %>%
   select(gear, gear_id) %>%
   distinct() %>%
   arrange(gear) %>%
@@ -159,7 +169,7 @@ gear_table
 Table of carb
 
 ```{r}
-carb_table <- x %>%
+carb_table <- y %>%
   select(carb, carb_id) %>%
   distinct() %>%
   arrange(carb) %>%
@@ -170,7 +180,7 @@ carb_table
 Table of cars
 
 ```{r}
-cars_table <- x %>%
+cars_table <- y %>%
   select(id, make, cyl_id, vs_id, am_id, gear_id, carb_id) %>%
   mutate(id = as.numeric(id)) %>%
   distinct() %>%
