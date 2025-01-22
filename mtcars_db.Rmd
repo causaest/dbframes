@@ -99,11 +99,27 @@ head(specs_table)
 Table of cyl
 
 ```{r}
-cyl_table <- x %>%
-  select(cyl, cyl_id) %>%
-  distinct() %>%
-  arrange(cyl) %>%
-  mutate(cyl = as.character(cyl))
+# Using dplyr
+# cyl_table <- x %>%
+#   select(cyl, cyl_id) %>%
+#   distinct() %>%
+#   arrange(cyl) %>%
+#   mutate(cyl = as.character(cyl))
+# cyl_table
+
+# Using base R
+# cyl_table <- x[, c("cyl", "cyl_id")] |> unique()
+# cyl_table <- cyl_table[order(cyl_table$cyl_id), ]
+# cyl_table$cyl <- as.character(cyl_table$cyl)
+# rownames(cyl_table) <- NULL
+# cyl_table
+
+# Using base R and |> pipe
+cyl_table <- x[, c("cyl", "cyl_id")] |>
+  unique() |>
+  (\(df) df[order(df$cyl_id), ])() |>
+  (\(df) { df$cyl <- as.character(df$cyl); df })() |>
+  (\(df) { rownames(df) <- NULL; df })()
 cyl_table
 ```
 
