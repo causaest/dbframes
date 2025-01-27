@@ -1,6 +1,5 @@
 ---
-title: "Create database files from dataframes in R"
-subtitle: "Example with `mtcars`"
+title: "Create database from `mtcars` data frame"
 author: "Alex"
 date: "`r format(Sys.time(), '%d %B %Y, %H:%M:%S')`"
 output: 
@@ -30,7 +29,7 @@ head(mtcars)
 #' strings ranging from 1 to the number of rows.
 #' 
 add_id_col <- function(x) {
-  x$id = as.character(seq_len(nrow(x))
+  x$id = as.character(seq_len(nrow(x)))
   return(x)
 }
 ```
@@ -117,13 +116,6 @@ Table of cyl
 #   mutate(cyl = as.character(cyl))
 # cyl_table
 
-# Using base R
-# cyl_table <- x[, c("cyl", "cyl_id")] |> unique()
-# cyl_table <- cyl_table[order(cyl_table$cyl_id), ]
-# cyl_table$cyl <- as.character(cyl_table$cyl)
-# rownames(cyl_table) <- NULL
-# cyl_table
-
 # Using base R and |> pipe
 cyl_table <- y[, c("cyl", "cyl_id")] |>
   unique() |>
@@ -136,44 +128,80 @@ cyl_table
 Table of vs
 
 ```{r}
-vs_table <- y %>%
-  select(vs, vs_id) %>%
-  distinct() %>%
-  arrange(vs) %>%
-  mutate(vs = as.character(vs))
+# # Using dplyr
+# vs_table <- y %>%
+#   select(vs, vs_id) %>%
+#   distinct() %>%
+#   arrange(vs) %>%
+#   mutate(vs = as.character(vs))
+# vs_table
+
+# Using base R and |> pipe
+vs_table <- y[, c("vs", "vs_id")] |>
+  unique() |>
+  (\(df) df[order(df$vs_id), ])() |>
+  (\(df) { df$vs <- as.character(df$vs); df })() |>
+  (\(df) { rownames(df) <- NULL; df })()
 vs_table
 ```
 
 Table of am
 
 ```{r}
-am_table <- y %>%
-  select(am, am_id) %>%
-  distinct() %>%
-  arrange(am) %>%
-  mutate(am = as.character(am))
+# # Using dplyr
+# am_table <- y %>%
+#   select(am, am_id) %>%
+#   distinct() %>%
+#   arrange(am) %>%
+#   mutate(am = as.character(am))
+# am_table
+
+# Using base R and |> pipe
+am_table <- y[, c("am", "am_id")] |>
+  unique() |>
+  (\(df) df[order(df$am_id), ])() |>
+  (\(df) { df$am <- as.character(df$am); df })() |>
+  (\(df) { rownames(df) <- NULL; df })()
 am_table
 ```
 
 Table of gear
 
 ```{r}
-gear_table <- y %>%
-  select(gear, gear_id) %>%
-  distinct() %>%
-  arrange(gear) %>%
-  mutate(gear = as.character(gear))
+# # Using dplyr
+# gear_table <- y %>%
+#   select(gear, gear_id) %>%
+#   distinct() %>%
+#   arrange(gear) %>%
+#   mutate(gear = as.character(gear))
+# gear_table
+
+# Using base R and |> pipe
+gear_table <- y[, c("gear", "gear_id")] |>
+  unique() |>
+  (\(df) df[order(df$gear_id), ])() |>
+  (\(df) { df$gear <- as.character(df$gear); df })() |>
+  (\(df) { rownames(df) <- NULL; df })()
 gear_table
 ```
 
 Table of carb
 
 ```{r}
-carb_table <- y %>%
-  select(carb, carb_id) %>%
-  distinct() %>%
-  arrange(carb) %>%
-  mutate(carb = as.character(carb))
+# # Using dplyr
+# carb_table <- y %>%
+#   select(carb, carb_id) %>%
+#   distinct() %>%
+#   arrange(carb) %>%
+#   mutate(carb = as.character(carb))
+# carb_table
+
+# Using base R and |> pipe
+carb_table <- y[, c("carb", "carb_id")] |>
+  unique() |>
+  (\(df) df[order(df$carb_id), ])() |>
+  (\(df) { df$carb <- as.character(df$carb); df })() |>
+  (\(df) { rownames(df) <- NULL; df })()
 carb_table
 ```
 
@@ -187,6 +215,15 @@ cars_table <- y %>%
   arrange(id) %>%
   mutate(id = as.character(id))
 head(cars_table)
+```
+
+```{r}
+cars_table <- y[, c("id", "make", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")] |>
+  unique() |>
+  (\(df) df[order(df$id), ])() |>
+  (\(df) { df$id <- as.character(df$id); df })() |>
+  (\(df) { rownames(df) <- NULL; df })()
+cars_table
 ```
 
 Rejoin
