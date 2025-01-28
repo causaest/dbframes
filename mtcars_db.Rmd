@@ -1,5 +1,5 @@
 ---
-title: "Create database from `mtcars` data frame"
+title: "Create database from data frame `mtcars`"
 author: "Alex"
 date: "`r format(Sys.time(), '%d %B %Y, %H:%M:%S')`"
 output: 
@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(dplyr)
-# library(RSQLite)
+library(RSQLite)
 ```
 
 ```{r}
@@ -46,8 +46,8 @@ as.cif <- function(x) {
 ```
 
 ```{r}
-# # Using dplyr:
-# x <- mtcars %>%
+# Using dplyr:
+# z <- mtcars %>%
 #   mutate(make = rownames(mtcars),
 #          id = as.character(row_number()), # as.character(1:nrow(mtcars))
 #          cyl_id = as.cif(cyl),
@@ -55,16 +55,16 @@ as.cif <- function(x) {
 #          am_id = as.cif(am),
 #          gear_id = as.cif(gear),
 #          carb_id = as.cif(carb))
-# rownames(x) <- 1:nrow(mtcars)
+# rownames(z) <- 1:nrow(mtcars)
 ```
 
 Using base R:
 
 ```{r}
-# y <- mtcars
-# y$make <- rownames(mtcars)
-# y <- add_id_col(y)
-# y <- within(y, {
+# z <- mtcars
+# z$make <- rownames(mtcars)
+# z <- add_id_col(z)
+# z <- within(z, {
 #   make = rownames(mtcars)
 #   cyl_id = as.cif(cyl)
 #   vs_id = as.cif(vs)
@@ -72,9 +72,9 @@ Using base R:
 #   gear_id = as.cif(gear)
 #   carb_id = as.cif(carb)
 # })
-# rownames(y) <- 1:nrow(y)
+# rownames(z) <- 1:nrow(z)
 
-y <- mtcars |>
+z <- mtcars |>
   transform(
     make = rownames(mtcars),
     cyl_id = as.cif(cyl),
@@ -87,21 +87,20 @@ y <- mtcars |>
   {\(data) { rownames(data) <- 1:nrow(data); data }}()
 ```
 
-```{r}
-# x_dplyr <- x
-# x <- y
-```
-
 Create table of cars specifications
 
 ```{r}
-specs_table <- y %>%
-  dplyr::select(id, mpg, disp:qsec)
-head(specs_table)
+
 ```
 
 ```{r}
-specs_table <- y[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
+# Using dplyr
+# specs_table <- z %>%
+#   dplyr::select(id, mpg, disp:qsec)
+# head(specs_table)
+
+# Using base R
+specs_table <- z[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
 head(specs_table)
 ```
 
@@ -109,7 +108,7 @@ Table of cyl
 
 ```{r}
 # Using dplyr
-# cyl_table <- x %>%
+# cyl_table <- z %>%
 #   select(cyl, cyl_id) %>%
 #   distinct() %>%
 #   arrange(cyl) %>%
@@ -117,7 +116,7 @@ Table of cyl
 # cyl_table
 
 # Using base R and |> pipe
-cyl_table <- y[, c("cyl", "cyl_id")] |>
+cyl_table <- z[, c("cyl", "cyl_id")] |>
   unique() |>
   (\(df) df[order(df$cyl_id), ])() |>
   (\(df) { df$cyl <- as.character(df$cyl); df })() |>
@@ -128,8 +127,8 @@ cyl_table
 Table of vs
 
 ```{r}
-# # Using dplyr
-# vs_table <- y %>%
+# Using dplyr
+# vs_table <- z %>%
 #   select(vs, vs_id) %>%
 #   distinct() %>%
 #   arrange(vs) %>%
@@ -137,7 +136,7 @@ Table of vs
 # vs_table
 
 # Using base R and |> pipe
-vs_table <- y[, c("vs", "vs_id")] |>
+vs_table <- z[, c("vs", "vs_id")] |>
   unique() |>
   (\(df) df[order(df$vs_id), ])() |>
   (\(df) { df$vs <- as.character(df$vs); df })() |>
@@ -148,8 +147,8 @@ vs_table
 Table of am
 
 ```{r}
-# # Using dplyr
-# am_table <- y %>%
+# Using dplyr
+# am_table <- z %>%
 #   select(am, am_id) %>%
 #   distinct() %>%
 #   arrange(am) %>%
@@ -157,7 +156,7 @@ Table of am
 # am_table
 
 # Using base R and |> pipe
-am_table <- y[, c("am", "am_id")] |>
+am_table <- z[, c("am", "am_id")] |>
   unique() |>
   (\(df) df[order(df$am_id), ])() |>
   (\(df) { df$am <- as.character(df$am); df })() |>
@@ -168,8 +167,8 @@ am_table
 Table of gear
 
 ```{r}
-# # Using dplyr
-# gear_table <- y %>%
+# Using dplyr
+# gear_table <- z %>%
 #   select(gear, gear_id) %>%
 #   distinct() %>%
 #   arrange(gear) %>%
@@ -177,7 +176,7 @@ Table of gear
 # gear_table
 
 # Using base R and |> pipe
-gear_table <- y[, c("gear", "gear_id")] |>
+gear_table <- z[, c("gear", "gear_id")] |>
   unique() |>
   (\(df) df[order(df$gear_id), ])() |>
   (\(df) { df$gear <- as.character(df$gear); df })() |>
@@ -188,8 +187,8 @@ gear_table
 Table of carb
 
 ```{r}
-# # Using dplyr
-# carb_table <- y %>%
+# Using dplyr
+# carb_table <- z %>%
 #   select(carb, carb_id) %>%
 #   distinct() %>%
 #   arrange(carb) %>%
@@ -197,7 +196,7 @@ Table of carb
 # carb_table
 
 # Using base R and |> pipe
-carb_table <- y[, c("carb", "carb_id")] |>
+carb_table <- z[, c("carb", "carb_id")] |>
   unique() |>
   (\(df) df[order(df$carb_id), ])() |>
   (\(df) { df$carb <- as.character(df$carb); df })() |>
@@ -208,7 +207,7 @@ carb_table
 Table of cars
 
 ```{r}
-cars_table <- y %>%
+cars_table <- z %>%
   select(id, make, cyl_id, vs_id, am_id, gear_id, carb_id) %>%
   mutate(id = as.numeric(id)) %>%
   distinct() %>%
