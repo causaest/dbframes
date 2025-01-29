@@ -47,15 +47,16 @@ as.cif <- function(x) {
 
 ```{r}
 # Using dplyr:
-# z <- mtcars %>%
-#   mutate(make = rownames(mtcars),
-#          id = as.character(row_number()), # as.character(1:nrow(mtcars))
-#          cyl_id = as.cif(cyl),
-#          vs_id = as.cif(vs),
-#          am_id = as.cif(am),
-#          gear_id = as.cif(gear),
-#          carb_id = as.cif(carb))
-# rownames(z) <- 1:nrow(mtcars)
+z1 <- mtcars %>%
+  mutate(make = rownames(mtcars),
+         id = as.character(row_number()), # as.character(1:nrow(mtcars))
+         cyl_id = as.cif(cyl),
+         vs_id = as.cif(vs),
+         am_id = as.cif(am),
+         gear_id = as.cif(gear),
+         carb_id = as.cif(carb))
+rownames(z1) <- 1:nrow(mtcars)
+head(z1)
 ```
 
 Using base R:
@@ -85,6 +86,7 @@ z <- mtcars |>
   ) |>
   add_id_col() |>
   {\(data) { rownames(data) <- 1:nrow(data); data }}()
+head(z)
 ```
 
 Create table of cars specifications
