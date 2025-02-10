@@ -18,9 +18,13 @@ library(dplyr)
 library(RSQLite)
 ```
 
+Print data frame overview.
+
 ```{r}
 head(mtcars)
 ```
+
+Define helper functions.
 
 ```{r}
 #' Add an ID Column to a Data Frame
@@ -29,6 +33,9 @@ head(mtcars)
 #' strings ranging from 1 to the number of rows.
 #' 
 add_id_col <- function(x) {
+  if ("id" %in% names(x)) { 
+    warning("Column 'id' already exists.")
+    }
   x$id = as.character(seq_len(nrow(x)))
   return(x)
 }
@@ -37,57 +44,52 @@ add_id_col <- function(x) {
 ```{r}
 #' Convert a Vector to Integer Character Label
 #'
-#' Converts a vector into a factor, and then into a vector of labels ranging 
-#' from 1 to the number of factor levels.
+#' Converts a vector into a factor, and then into a vector of labels 
+#' (characters) ranging from 1 to the number of factor levels.
 #'
 as.cif <- function(x) {
   as.character(as.integer(as.factor(x)))
 }
 ```
 
+Create augmented data frame.
+
 ```{r}
 # Using dplyr:
 z1 <- mtcars %>%
   mutate(make = rownames(mtcars),
-         id = as.character(row_number()), # as.character(1:nrow(mtcars))
+         id = as.character(row_number()),
          cyl_id = as.cif(cyl),
          vs_id = as.cif(vs),
          am_id = as.cif(am),
          gear_id = as.cif(gear),
          carb_id = as.cif(carb))
-rownames(z1) <- 1:nrow(mtcars)
+rownames(z1) <- seq_len(nrow(z1))
 head(z1)
 ```
 
 Using base R:
 
 ```{r}
-# z <- mtcars
-# z$make <- rownames(mtcars)
-# z <- add_id_col(z)
-# z <- within(z, {
-#   make = rownames(mtcars)
-#   cyl_id = as.cif(cyl)
-#   vs_id = as.cif(vs)
-#   am_id = as.cif(am)
-#   gear_id = as.cif(gear)
-#   carb_id = as.cif(carb)
-# })
-# rownames(z) <- 1:nrow(z)
+z2 <- within(mtcars, {
+  make <- rownames(mtcars)
+  cyl_id <- as.cif(cyl)
+  vs_id <- as.cif(vs)
+  am_id <- as.cif(am)
+  gear_id <- as.cif(gear)
+  carb_id <- as.cif(carb)
+})
 
-z <- mtcars |>
-  transform(
-    make = rownames(mtcars),
-    cyl_id = as.cif(cyl),
-    vs_id = as.cif(vs),
-    am_id = as.cif(am),
-    gear_id = as.cif(gear),
-    carb_id = as.cif(carb)
-  ) |>
-  add_id_col() |>
-  {\(data) { rownames(data) <- 1:nrow(data); data }}()
-head(z)
+z2 <- add_id_col(z2)
+
+# Reorder columns to match dplyr::mutate()
+z2 <- z2[, c(names(mtcars), "make", "id", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")]
+
+rownames(z2) <- seq_len(nrow(z2))
+head(z2)
 ```
+
+[up to here]
 
 Create table of cars specifications
 
