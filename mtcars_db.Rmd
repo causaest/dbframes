@@ -89,13 +89,11 @@ rownames(z2) <- seq_len(nrow(z2))
 head(z2)
 ```
 
-[up to here]
-
-Create table of cars specifications
-
 ```{r}
-
+z <- z2
 ```
+
+Create table of cars specs
 
 ```{r}
 # Using dplyr
@@ -108,18 +106,20 @@ specs_table <- z[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
 head(specs_table)
 ```
 
-Table of cyl
+Create table of cyl
 
 ```{r}
 # Using dplyr
-# cyl_table <- z %>%
-#   select(cyl, cyl_id) %>%
-#   distinct() %>%
-#   arrange(cyl) %>%
-#   mutate(cyl = as.character(cyl))
-# cyl_table
+cyl_table <- z %>%
+  select(cyl, cyl_id) %>%
+  distinct() %>%
+  arrange(cyl) %>%
+  mutate(cyl = as.character(cyl))
+cyl_table
+```
 
-# Using base R and |> pipe
+```{r}
+# Using base R
 cyl_table <- z[, c("cyl", "cyl_id")] |>
   unique() |>
   (\(df) df[order(df$cyl_id), ])() |>
@@ -128,18 +128,20 @@ cyl_table <- z[, c("cyl", "cyl_id")] |>
 cyl_table
 ```
 
-Table of vs
+Create table of vs
 
 ```{r}
 # Using dplyr
-# vs_table <- z %>%
-#   select(vs, vs_id) %>%
-#   distinct() %>%
-#   arrange(vs) %>%
-#   mutate(vs = as.character(vs))
-# vs_table
+vs_table <- z %>%
+  select(vs, vs_id) %>%
+  distinct() %>%
+  arrange(vs) %>%
+  mutate(vs = as.character(vs))
+vs_table
+```
 
-# Using base R and |> pipe
+```{r}
+# Using base R
 vs_table <- z[, c("vs", "vs_id")] |>
   unique() |>
   (\(df) df[order(df$vs_id), ])() |>
@@ -148,18 +150,21 @@ vs_table <- z[, c("vs", "vs_id")] |>
 vs_table
 ```
 
-Table of am
+Create table of am
 
 ```{r}
 # Using dplyr
-# am_table <- z %>%
-#   select(am, am_id) %>%
-#   distinct() %>%
-#   arrange(am) %>%
-#   mutate(am = as.character(am))
-# am_table
+am_table <- z %>%
+  select(am, am_id) %>%
+  distinct() %>%
+  arrange(am) %>%
+  mutate(am = as.character(am))
+am_table
+```
 
-# Using base R and |> pipe
+
+```{r}
+# Using base R
 am_table <- z[, c("am", "am_id")] |>
   unique() |>
   (\(df) df[order(df$am_id), ])() |>
@@ -167,6 +172,8 @@ am_table <- z[, c("am", "am_id")] |>
   (\(df) { rownames(df) <- NULL; df })()
 am_table
 ```
+
+[up to here]
 
 Table of gear
 
