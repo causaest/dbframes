@@ -97,7 +97,7 @@ head(z2)
 z <- z2
 ```
 
-Create table of cars specs.
+Create table of cars specs (mpg, disp, hp, drat, wt, qsec).
 
 ```{r}
 # Using dplyr
@@ -167,7 +167,6 @@ am_table <- z %>%
   mutate(am = as.integer(am)) #mutate(am = as.character(am))
 am_table
 ```
-
 
 ```{r}
 # Using base R
@@ -246,7 +245,8 @@ cars_table
 Rejoin tables to recreate original data frame.
 
 ```{r}
-z_orig1 <- cars_table %>% 
+# Using dplyr
+mtcars_merged <- cars_table %>% 
   right_join(., cyl_table, by = "cyl_id") %>% 
   right_join(., vs_table, by = "vs_id") %>% 
   right_join(., am_table, by = "am_id") %>%
@@ -255,30 +255,57 @@ z_orig1 <- cars_table %>%
   select(c(id, make, cyl, vs, am, gear, carb)) %>% 
   right_join(., specs_table, by = "id") %>%
   as_tibble()
-head(z_orig1)
+mtcars_merged <- as.data.frame(mtcars_merged)
+head(mtcars_merged)
 ```
 
-Reorder columns and fix data types
+```{r}
+mtcars_merged <- cars_table |> 
+  merge(cyl_table, by = "cyl_id", all.y = TRUE) |> 
+  merge(vs_table, by = "vs_id", all.y = TRUE) |> 
+  merge(am_table, by = "am_id", all.y = TRUE) |> 
+  merge(gear_table, by = "gear_id", all.y = TRUE) |> 
+  merge(carb_table, by = "carb_id", all.y = TRUE) |> 
+  (\(df) df[c("id", "make", "cyl", "vs", "am", "gear", "carb")])() |> 
+  merge(specs_table, by = "id", all.y = TRUE)
+head(mtcars_merged)
+```
+
+Restore row names.
 
 ```{r}
-z_orig1 <- as.data.frame(z_orig1)
-rownames(z_orig1) <- df$make
-z_orig1 <- z_orig1 %>%
-  select(mpg, cyl, disp:qsec, vs:carb) %>%
+rownames(mtcars_merged) <- z$make
+```
+
+Reorder columns and fix data types.
+
+```{r}
+# Using dplyr
+mtcars_restored <- mtcars_merged %>%
+  select(all_of(names(mtcars))) %>%
   mutate(across(.cols = c(cyl, vs, am, gear, carb), .fns = ~ as.numeric(.x)))
-head(z_orig1)
+head(mtcars_restored)
 ```
 
-The constructed data frame is identical to the original
-
 ```{r}
-identical(mtcars, z_orig1)
+# Using base R
+cols_to_num <- c("cyl", "vs", "am", "gear", "carb")
+mtcars_restored <- mtcars_merged |> 
+  (\(df) df[names(mtcars)])() |>  # Select only columns present in mtcars
+  (\(df) { df[cols_to_num] <- lapply(df[cols_to_num], as.numeric); df })()
+mtcars_restored
 ```
 
-A more relaxed equivalence test, ignoring the row order:
+Confirm that the reconstructed data frame is identical to the original.
 
 ```{r}
-nrow(setdiff(mtcars, z_orig1)) == 0
+identical(mtcars, mtcars_restored)
+```
+
+Confirm that the reconstructed data frame is identical to the original, ignoring the row order (a more relaxed equivalence test):
+
+```{r}
+nrow(setdiff(mtcars, mtcars_restored)) == 0
 ```
 
 Create database
@@ -288,13 +315,13 @@ con <- dbConnect(RSQLite::SQLite(), "mtcars.sqlite")
 ```
 
 ```{r}
-dbWriteTable(conn = con, name = "caritems", value = cars_table)
+dbWriteTable(conn = con, name = "cars", value = cars_table)
 dbWriteTable(con, "cyl", cyl_table)
 dbWriteTable(con, "vs", vs_table)
 dbWriteTable(con, "am", am_table)
 dbWriteTable(con, "gear", gear_table)
 dbWriteTable(con, "carb", carb_table)
-dbWriteTable(con, "techprop", specs_table)
+dbWriteTable(con, "specs", specs_table)
 ```
 
 ```{r}
