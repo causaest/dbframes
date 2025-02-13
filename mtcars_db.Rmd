@@ -36,7 +36,7 @@ add_id_col <- function(x) {
   if ("id" %in% names(x)) { 
     warning("Column 'id' already exists.")
     }
-  x$id = as.character(seq_len(nrow(x)))
+  x$id = as.integer(seq_len(nrow(x))) #x$id = as.character(seq_len(nrow(x)))
   return(x)
 }
 ```
@@ -50,6 +50,10 @@ add_id_col <- function(x) {
 as.cif <- function(x) {
   as.character(as.integer(as.factor(x)))
 }
+
+as.cif <- function(x) {
+  as.integer(as.factor(x))
+}
 ```
 
 Create augmented data frame.
@@ -58,7 +62,7 @@ Create augmented data frame.
 # Using dplyr:
 z1 <- mtcars %>%
   mutate(make = rownames(mtcars),
-         id = as.character(row_number()),
+         id = as.integer(row_number()), #id = as.character(row_number()),
          cyl_id = as.cif(cyl),
          vs_id = as.cif(vs),
          am_id = as.cif(am),
@@ -93,20 +97,22 @@ head(z2)
 z <- z2
 ```
 
-Create table of cars specs
+Create table of cars specs.
 
 ```{r}
 # Using dplyr
-# specs_table <- z %>%
-#   dplyr::select(id, mpg, disp:qsec)
-# head(specs_table)
+specs_table <- z %>%
+  dplyr::select(id, mpg, disp:qsec)
+head(specs_table)
+```
 
+```{r}
 # Using base R
 specs_table <- z[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
 head(specs_table)
 ```
 
-Create table of cyl
+Create table of cyl.
 
 ```{r}
 # Using dplyr
@@ -114,7 +120,7 @@ cyl_table <- z %>%
   select(cyl, cyl_id) %>%
   distinct() %>%
   arrange(cyl) %>%
-  mutate(cyl = as.character(cyl))
+  mutate(cyl = as.integer(cyl)) #mutate(cyl = as.character(cyl))
 cyl_table
 ```
 
@@ -123,12 +129,12 @@ cyl_table
 cyl_table <- z[, c("cyl", "cyl_id")] |>
   unique() |>
   (\(df) df[order(df$cyl_id), ])() |>
-  (\(df) { df$cyl <- as.character(df$cyl); df })() |>
+  (\(df) { df$cyl <- as.integer(df$cyl); df })() |> #(\(df) { df$cyl <- as.character(df$cyl); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 cyl_table
 ```
 
-Create table of vs
+Create table of vs.
 
 ```{r}
 # Using dplyr
@@ -136,7 +142,7 @@ vs_table <- z %>%
   select(vs, vs_id) %>%
   distinct() %>%
   arrange(vs) %>%
-  mutate(vs = as.character(vs))
+  mutate(vs = as.integer(vs)) #mutate(vs = as.character(vs))
 vs_table
 ```
 
@@ -145,12 +151,12 @@ vs_table
 vs_table <- z[, c("vs", "vs_id")] |>
   unique() |>
   (\(df) df[order(df$vs_id), ])() |>
-  (\(df) { df$vs <- as.character(df$vs); df })() |>
+  (\(df) { df$vs <- as.integer(df$vs); df })() |> #(\(df) { df$vs <- as.character(df$vs); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 vs_table
 ```
 
-Create table of am
+Create table of am.
 
 ```{r}
 # Using dplyr
@@ -158,7 +164,7 @@ am_table <- z %>%
   select(am, am_id) %>%
   distinct() %>%
   arrange(am) %>%
-  mutate(am = as.character(am))
+  mutate(am = as.integer(am)) #mutate(am = as.character(am))
 am_table
 ```
 
@@ -168,78 +174,79 @@ am_table
 am_table <- z[, c("am", "am_id")] |>
   unique() |>
   (\(df) df[order(df$am_id), ])() |>
-  (\(df) { df$am <- as.character(df$am); df })() |>
+  (\(df) { df$am <- as.integer(df$am); df })() |> #(\(df) { df$am <- as.character(df$am); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 am_table
 ```
 
-[up to here]
-
-Table of gear
+Table of gear.
 
 ```{r}
 # Using dplyr
-# gear_table <- z %>%
-#   select(gear, gear_id) %>%
-#   distinct() %>%
-#   arrange(gear) %>%
-#   mutate(gear = as.character(gear))
-# gear_table
+gear_table <- z %>%
+  select(gear, gear_id) %>%
+  distinct() %>%
+  arrange(gear) %>%
+  mutate(gear = as.integer(gear)) #mutate(gear = as.character(gear))
+gear_table
+```
 
-# Using base R and |> pipe
+```{r}
+# Using base R
 gear_table <- z[, c("gear", "gear_id")] |>
   unique() |>
   (\(df) df[order(df$gear_id), ])() |>
-  (\(df) { df$gear <- as.character(df$gear); df })() |>
+  (\(df) { df$gear <- as.integer(df$gear); df })() |> #(\(df) { df$gear <- as.character(df$gear); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 gear_table
 ```
 
-Table of carb
+Table of carb.
 
 ```{r}
 # Using dplyr
-# carb_table <- z %>%
-#   select(carb, carb_id) %>%
-#   distinct() %>%
-#   arrange(carb) %>%
-#   mutate(carb = as.character(carb))
-# carb_table
+carb_table <- z %>%
+  select(carb, carb_id) %>%
+  distinct() %>%
+  arrange(carb) %>%
+  mutate(carb = as.integer(carb)) #mutate(carb = as.character(carb))
+carb_table
+```
 
-# Using base R and |> pipe
+```{r}
+# Using base R
 carb_table <- z[, c("carb", "carb_id")] |>
   unique() |>
   (\(df) df[order(df$carb_id), ])() |>
-  (\(df) { df$carb <- as.character(df$carb); df })() |>
+  (\(df) { df$carb <- as.integer(df$carb); df })() |> #(\(df) { df$carb <- as.character(df$carb); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 carb_table
 ```
 
-Table of cars
+Table of cars.
 
 ```{r}
 cars_table <- z %>%
   select(id, make, cyl_id, vs_id, am_id, gear_id, carb_id) %>%
-  mutate(id = as.numeric(id)) %>%
+  # mutate(id = as.numeric(id)) %>%
   distinct() %>%
-  arrange(id) %>%
-  mutate(id = as.character(id))
+  arrange(id) # %>% mutate(id = as.character(id))
 head(cars_table)
 ```
 
 ```{r}
-cars_table <- y[, c("id", "make", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")] |>
+cars_table <- z[, c("id", "make", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")] |>
   unique() |>
   (\(df) df[order(df$id), ])() |>
-  (\(df) { df$id <- as.character(df$id); df })() |>
+  #(\(df) { df$id <- as.character(df$id); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 cars_table
 ```
 
-Rejoin
+Rejoin tables to recreate original data frame.
 
 ```{r}
-df <- cars_table %>% 
+z_orig1 <- cars_table %>% 
   right_join(., cyl_table, by = "cyl_id") %>% 
   right_join(., vs_table, by = "vs_id") %>% 
   right_join(., am_table, by = "am_id") %>%
@@ -248,30 +255,30 @@ df <- cars_table %>%
   select(c(id, make, cyl, vs, am, gear, carb)) %>% 
   right_join(., specs_table, by = "id") %>%
   as_tibble()
-head(df)
+head(z_orig1)
 ```
 
 Reorder columns and fix data types
 
 ```{r}
-df <- as.data.frame(df)
-rownames(df) <- df$make
-df <- df %>%
+z_orig1 <- as.data.frame(z_orig1)
+rownames(z_orig1) <- df$make
+z_orig1 <- z_orig1 %>%
   select(mpg, cyl, disp:qsec, vs:carb) %>%
   mutate(across(.cols = c(cyl, vs, am, gear, carb), .fns = ~ as.numeric(.x)))
-head(df)
+head(z_orig1)
 ```
 
 The constructed data frame is identical to the original
 
 ```{r}
-identical(mtcars, df)
+identical(mtcars, z_orig1)
 ```
 
 A more relaxed equivalence test, ignoring the row order:
 
 ```{r}
-nrow(setdiff(mtcars, df)) == 0
+nrow(setdiff(mtcars, z_orig1)) == 0
 ```
 
 Create database
