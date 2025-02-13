@@ -1,7 +1,9 @@
-# dbframes: Tools for creating database files from popular R dataframes
+# dbframes: Tools for creating database files from R dataframes
 
-Currently, the following datasets are supported:
+These tools have an educational purpose, and are not meant to be a production tool. For more sophisticated applications, see the `{dm}` package.
+
+Currently, the following data frames are supported:
 
 - `datasets::mtcars`
 
-You can apply the same methodology to any other dataframe.
+The same methodology can be applied to any other dataframe to obtain a database file.
