@@ -36,22 +36,18 @@ add_id_col <- function(x) {
   if ("id" %in% names(x)) { 
     warning("Column 'id' already exists.")
     }
-  x$id = as.integer(seq_len(nrow(x))) #x$id = as.character(seq_len(nrow(x)))
+  x$id = as.integer(seq_len(nrow(x)))
   return(x)
 }
 ```
 
 ```{r}
-#' Convert a Vector to Integer Character Label
+#' Perform Ordinal Encoding to Vector
 #'
-#' Converts a vector into a factor, and then into a vector of labels 
-#' (characters) ranging from 1 to the number of factor levels.
+#' Converts a vector into an ordinal representation of integers ranging from 1
+#' to the number of factor levels.
 #'
-as.cif <- function(x) {
-  as.character(as.integer(as.factor(x)))
-}
-
-as.cif <- function(x) {
+as.intfac <- function(x) {
   as.integer(as.factor(x))
 }
 ```
@@ -62,12 +58,12 @@ Create augmented data frame.
 # Using dplyr:
 z1 <- mtcars %>%
   mutate(make = rownames(mtcars),
-         id = as.integer(row_number()), #id = as.character(row_number()),
-         cyl_id = as.cif(cyl),
-         vs_id = as.cif(vs),
-         am_id = as.cif(am),
-         gear_id = as.cif(gear),
-         carb_id = as.cif(carb))
+         id = as.integer(row_number()),
+         cyl_id = as.intfac(cyl),
+         vs_id = as.intfac(vs),
+         am_id = as.intfac(am),
+         gear_id = as.intfac(gear),
+         carb_id = as.intfac(carb))
 rownames(z1) <- seq_len(nrow(z1))
 head(z1)
 ```
@@ -77,11 +73,11 @@ Using base R:
 ```{r}
 z2 <- within(mtcars, {
   make <- rownames(mtcars)
-  cyl_id <- as.cif(cyl)
-  vs_id <- as.cif(vs)
-  am_id <- as.cif(am)
-  gear_id <- as.cif(gear)
-  carb_id <- as.cif(carb)
+  cyl_id <- as.intfac(cyl)
+  vs_id <- as.intfac(vs)
+  am_id <- as.intfac(am)
+  gear_id <- as.intfac(gear)
+  carb_id <- as.intfac(carb)
 })
 
 z2 <- add_id_col(z2)
@@ -120,7 +116,7 @@ cyl_table <- z %>%
   select(cyl, cyl_id) %>%
   distinct() %>%
   arrange(cyl) %>%
-  mutate(cyl = as.integer(cyl)) #mutate(cyl = as.character(cyl))
+  mutate(cyl = as.integer(cyl))
 cyl_table
 ```
 
@@ -129,7 +125,7 @@ cyl_table
 cyl_table <- z[, c("cyl", "cyl_id")] |>
   unique() |>
   (\(df) df[order(df$cyl_id), ])() |>
-  (\(df) { df$cyl <- as.integer(df$cyl); df })() |> #(\(df) { df$cyl <- as.character(df$cyl); df })() |>
+  (\(df) { df$cyl <- as.integer(df$cyl); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 cyl_table
 ```
@@ -142,7 +138,7 @@ vs_table <- z %>%
   select(vs, vs_id) %>%
   distinct() %>%
   arrange(vs) %>%
-  mutate(vs = as.integer(vs)) #mutate(vs = as.character(vs))
+  mutate(vs = as.integer(vs))
 vs_table
 ```
 
@@ -151,7 +147,7 @@ vs_table
 vs_table <- z[, c("vs", "vs_id")] |>
   unique() |>
   (\(df) df[order(df$vs_id), ])() |>
-  (\(df) { df$vs <- as.integer(df$vs); df })() |> #(\(df) { df$vs <- as.character(df$vs); df })() |>
+  (\(df) { df$vs <- as.integer(df$vs); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 vs_table
 ```
@@ -164,7 +160,7 @@ am_table <- z %>%
   select(am, am_id) %>%
   distinct() %>%
   arrange(am) %>%
-  mutate(am = as.integer(am)) #mutate(am = as.character(am))
+  mutate(am = as.integer(am))
 am_table
 ```
 
@@ -173,7 +169,7 @@ am_table
 am_table <- z[, c("am", "am_id")] |>
   unique() |>
   (\(df) df[order(df$am_id), ])() |>
-  (\(df) { df$am <- as.integer(df$am); df })() |> #(\(df) { df$am <- as.character(df$am); df })() |>
+  (\(df) { df$am <- as.integer(df$am); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 am_table
 ```
@@ -186,7 +182,7 @@ gear_table <- z %>%
   select(gear, gear_id) %>%
   distinct() %>%
   arrange(gear) %>%
-  mutate(gear = as.integer(gear)) #mutate(gear = as.character(gear))
+  mutate(gear = as.integer(gear))
 gear_table
 ```
 
@@ -195,7 +191,7 @@ gear_table
 gear_table <- z[, c("gear", "gear_id")] |>
   unique() |>
   (\(df) df[order(df$gear_id), ])() |>
-  (\(df) { df$gear <- as.integer(df$gear); df })() |> #(\(df) { df$gear <- as.character(df$gear); df })() |>
+  (\(df) { df$gear <- as.integer(df$gear); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 gear_table
 ```
@@ -208,7 +204,7 @@ carb_table <- z %>%
   select(carb, carb_id) %>%
   distinct() %>%
   arrange(carb) %>%
-  mutate(carb = as.integer(carb)) #mutate(carb = as.character(carb))
+  mutate(carb = as.integer(carb))
 carb_table
 ```
 
@@ -217,7 +213,7 @@ carb_table
 carb_table <- z[, c("carb", "carb_id")] |>
   unique() |>
   (\(df) df[order(df$carb_id), ])() |>
-  (\(df) { df$carb <- as.integer(df$carb); df })() |> #(\(df) { df$carb <- as.character(df$carb); df })() |>
+  (\(df) { df$carb <- as.integer(df$carb); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 carb_table
 ```
@@ -229,7 +225,7 @@ cars_table <- z %>%
   select(id, make, cyl_id, vs_id, am_id, gear_id, carb_id) %>%
   # mutate(id = as.numeric(id)) %>%
   distinct() %>%
-  arrange(id) # %>% mutate(id = as.character(id))
+  arrange(id)
 head(cars_table)
 ```
 
@@ -237,7 +233,6 @@ head(cars_table)
 cars_table <- z[, c("id", "make", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")] |>
   unique() |>
   (\(df) df[order(df$id), ])() |>
-  #(\(df) { df$id <- as.character(df$id); df })() |>
   (\(df) { rownames(df) <- NULL; df })()
 cars_table
 ```
@@ -291,7 +286,7 @@ head(mtcars_restored)
 # Using base R
 cols_to_num <- c("cyl", "vs", "am", "gear", "carb")
 mtcars_restored <- mtcars_merged |> 
-  (\(df) df[names(mtcars)])() |>  # Select only columns present in mtcars
+  (\(df) df[names(mtcars)])() |>
   (\(df) { df[cols_to_num] <- lapply(df[cols_to_num], as.numeric); df })()
 mtcars_restored
 ```
@@ -308,7 +303,7 @@ Confirm that the reconstructed data frame is identical to the original, ignoring
 nrow(setdiff(mtcars, mtcars_restored)) == 0
 ```
 
-Create database
+Create database.
 
 ```{r}
 con <- dbConnect(RSQLite::SQLite(), "mtcars.sqlite")
@@ -328,13 +323,13 @@ dbWriteTable(con, "specs", specs_table)
 dbListTables(con)
 ```
 
-Close the database connection
+Close the database connection.
 
 ```{r}
 dbDisconnect(con)
 ```
 
-Cleanup
+Cleanup.
 
 ```{r}
 file.remove("mtcars.sqlite")
