@@ -25,39 +25,16 @@ Print data frame overview.
 head(mtcars)
 ```
 
-Define helper functions.
+Load helper functions.
 
 ```{r}
-#' Add an ID Column to a Data Frame
-#' 
-#' Adds an `id` column to a data frame, populated with IDs as character 
-#' strings ranging from 1 to the number of rows.
-#' 
-add_id_col <- function(x) {
-  if ("id" %in% names(x)) { 
-    warning("Column 'id' already exists.")
-    }
-  x$id = as.integer(seq_len(nrow(x)))
-  return(x)
-}
-```
-
-```{r}
-#' Perform Ordinal Encoding to Vector
-#'
-#' Converts a vector into an ordinal representation of integers ranging from 1
-#' to the number of factor levels.
-#'
-as.intfac <- function(x) {
-  as.integer(as.factor(x))
-}
+source("helper.R")
 ```
 
 Create augmented data frame.
 
 ```{r}
-# Using dplyr:
-z1 <- mtcars %>%
+z <- mtcars %>%
   mutate(make = rownames(mtcars),
          id = as.integer(row_number()),
          cyl_id = as.intfac(cyl),
@@ -65,18 +42,13 @@ z1 <- mtcars %>%
          am_id = as.intfac(am),
          gear_id = as.intfac(gear),
          carb_id = as.intfac(carb))
-rownames(z1) <- seq_len(nrow(z1))
-head(z1)
-```
-
-```{r}
-z <- z1
+rownames(z) <- seq_len(nrow(z))
+head(z)
 ```
 
 Create table of cars specs (mpg, disp, hp, drat, wt, qsec).
 
 ```{r}
-# Using dplyr
 specs_table <- z %>%
   dplyr::select(id, mpg, disp:qsec)
 head(specs_table)
@@ -85,7 +57,6 @@ head(specs_table)
 Create table of cyl.
 
 ```{r}
-# Using dplyr
 cyl_table <- z %>%
   select(cyl, cyl_id) %>%
   distinct() %>%
@@ -97,7 +68,6 @@ cyl_table
 Create table of vs.
 
 ```{r}
-# Using dplyr
 vs_table <- z %>%
   select(vs, vs_id) %>%
   distinct() %>%
@@ -109,7 +79,6 @@ vs_table
 Create table of am.
 
 ```{r}
-# Using dplyr
 am_table <- z %>%
   select(am, am_id) %>%
   distinct() %>%
@@ -121,7 +90,6 @@ am_table
 Table of gear.
 
 ```{r}
-# Using dplyr
 gear_table <- z %>%
   select(gear, gear_id) %>%
   distinct() %>%
@@ -133,7 +101,6 @@ gear_table
 Table of carb.
 
 ```{r}
-# Using dplyr
 carb_table <- z %>%
   select(carb, carb_id) %>%
   distinct() %>%
@@ -155,7 +122,6 @@ head(cars_table)
 Rejoin tables to recreate original data frame.
 
 ```{r}
-# Using dplyr
 mtcars_merged <- cars_table %>% 
   right_join(., cyl_table, by = "cyl_id") %>% 
   right_join(., vs_table, by = "vs_id") %>% 
@@ -178,7 +144,6 @@ rownames(mtcars_merged) <- z$make
 Reorder columns and fix data types.
 
 ```{r}
-# Using dplyr
 mtcars_restored <- mtcars_merged %>%
   select(all_of(names(mtcars))) %>%
   mutate(across(.cols = c(cyl, vs, am, gear, carb), .fns = ~ as.numeric(.x)))

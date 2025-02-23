@@ -15,7 +15,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-library(dplyr)
 library(RSQLite)
 ```
 
@@ -25,40 +24,16 @@ Print data frame overview.
 head(mtcars)
 ```
 
-Define helper functions.
+Load helper functions.
 
 ```{r}
-#' Add an ID Column to a Data Frame
-#' 
-#' Adds an `id` column to a data frame, populated with IDs as character 
-#' strings ranging from 1 to the number of rows.
-#' 
-add_id_col <- function(x) {
-  if ("id" %in% names(x)) { 
-    warning("Column 'id' already exists.")
-    }
-  x$id = as.integer(seq_len(nrow(x)))
-  return(x)
-}
-```
-
-```{r}
-#' Perform Ordinal Encoding to Vector
-#'
-#' Converts a vector into an ordinal representation of integers ranging from 1
-#' to the number of factor levels.
-#'
-as.intfac <- function(x) {
-  as.integer(as.factor(x))
-}
+source(file = "helper.R")
 ```
 
 Create augmented data frame.
 
-Using base R:
-
 ```{r}
-z2 <- within(mtcars, {
+z <- within(mtcars, {
   make <- rownames(mtcars)
   cyl_id <- as.intfac(cyl)
   vs_id <- as.intfac(vs)
@@ -67,23 +42,18 @@ z2 <- within(mtcars, {
   carb_id <- as.intfac(carb)
 })
 
-z2 <- add_id_col(z2)
+z <- add_id_col(z)
 
-# Reorder columns to match dplyr::mutate()
-z2 <- z2[, c(names(mtcars), "make", "id", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")]
+# Reorder columns
+z <- z[, c(names(mtcars), "make", "id", "cyl_id", "vs_id", "am_id", "gear_id", "carb_id")]
 
-rownames(z2) <- seq_len(nrow(z2))
-head(z2)
-```
-
-```{r}
-z <- z2
+rownames(z) <- seq_len(nrow(z))
+head(z)
 ```
 
 Create table of cars specs (mpg, disp, hp, drat, wt, qsec).
 
 ```{r}
-# Using base R
 specs_table <- z[, c("id", "mpg", "disp", "hp", "drat", "wt", "qsec")]
 head(specs_table)
 ```
@@ -91,7 +61,6 @@ head(specs_table)
 Create table of cyl.
 
 ```{r}
-# Using base R
 cyl_table <- z[, c("cyl", "cyl_id")] |>
   unique() |>
   (\(df) df[order(df$cyl_id), ])() |>
@@ -103,7 +72,6 @@ cyl_table
 Create table of vs.
 
 ```{r}
-# Using base R
 vs_table <- z[, c("vs", "vs_id")] |>
   unique() |>
   (\(df) df[order(df$vs_id), ])() |>
@@ -115,7 +83,6 @@ vs_table
 Create table of am.
 
 ```{r}
-# Using base R
 am_table <- z[, c("am", "am_id")] |>
   unique() |>
   (\(df) df[order(df$am_id), ])() |>
@@ -127,7 +94,6 @@ am_table
 Table of gear.
 
 ```{r}
-# Using base R
 gear_table <- z[, c("gear", "gear_id")] |>
   unique() |>
   (\(df) df[order(df$gear_id), ])() |>
@@ -139,7 +105,6 @@ gear_table
 Table of carb.
 
 ```{r}
-# Using base R
 carb_table <- z[, c("carb", "carb_id")] |>
   unique() |>
   (\(df) df[order(df$carb_id), ])() |>
@@ -181,7 +146,6 @@ rownames(mtcars_merged) <- z$make
 Reorder columns and fix data types.
 
 ```{r}
-# Using base R
 cols_to_num <- c("cyl", "vs", "am", "gear", "carb")
 mtcars_restored <- mtcars_merged |> 
   (\(df) df[names(mtcars)])() |>
